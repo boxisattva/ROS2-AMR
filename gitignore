@@ -1,0 +1,33 @@
+```gitignore
+# ROS2
+build/
+install/
+log/
+.colcon/
+
+# Python
+__pycyche__/
+*.pyc
+*.pyo
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.tar
+
+# Видео (большие файлы)
+*.mp4
+*.mov
+docs/demos/*.mp4
+
+# Логи
+*.log
