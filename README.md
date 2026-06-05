@@ -13,8 +13,8 @@ PET project for the implementation of a semi-autonomous mobile robot in the fram
 
 ```bash
 # 1. Клонировать
-git clone https://github.com/ВАШ_НИК/ros2-amr-navbot.git
-cd ros2-amr-navbot
+git clone https://github.com/boxisattva/ROS2-AMR.git
+cd ROS2-AMR
 
 # 2. Запустить в Docker
 docker-compose up
