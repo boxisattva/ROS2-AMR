@@ -1,3 +1,4 @@
+![ROS2 CI](https://github.com/boxisattva/ROS2-AMR/actions/workflows/ci.yml/badge.svg?branch=main)
 # ROS2-AMR
 PET project for the implementation of a semi-autonomous mobile robot in the framework of training July-August
 
@@ -5,6 +6,7 @@ PET project for the implementation of a semi-autonomous mobile robot in the fram
 &gt; Проект создан в рамках 8-недельного плана обучения (июль–август 2026).
 
 ![Демо](docs/demos/final_demo.gif)
+
 
 ## Структура пакетов
 
@@ -31,3 +33,20 @@ docker-compose up --build # или colcon build
 
 # 3. Запустить все модули
 ros2 launch amr_bringup bringup.launch.py
+
+## CI/CD
+
+Проект использует **GitHub Actions** для автоматической сборки и тестирования:
+
+| Pipeline | Статус | Назначение |
+|----------|--------|-----------|
+| ROS2 CI | ![ROS2 CI](https://github.com/boxisattva/ROS2-AMR/actions/workflows/ci.yml/badge.svg) | Сборка, тесты, проверка зависимостей |
+
+**Команды разработчика:**
+
+```bash
+make setup    # Установить зависимости (первый раз)
+make build    # Собрать проект
+make test     # Запустить тесты
+make clean    # Очистить артефакты
+make demo     # Запустить демо talker/listener
