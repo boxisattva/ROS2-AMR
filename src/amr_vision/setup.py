@@ -1,28 +1,31 @@
 from setuptools import find_packages, setup
 
-package_name = 'amr_bringup'
+package_name = 'amr_vision'
 
 setup(
     name=package_name,
-    version='0.1.0',
+    version='0.0.0',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/amr_bringup/launch', ['launch/bringup.launch.py']),
+        ('share/amr_vision/launch', ['launch/vision.launch.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='denis',
     maintainer_email='boxisattva@yandex.ru',
-    description='AMR bringup package: talker/listener demo',
+    description='AMR vision: camera and computer vision',
     license='MIT',
-    tests_require=['pytest'],
-    entry_points={
-        'console_scripts': [
-            'talker = amr_bringup.talker:main',
-            'listener = amr_bringup.listener:main',
+    extras_require={
+        'test': [
+            'pytest',
         ],
     },
+    entry_points={
+    'console_scripts': [
+        'camera_node = amr_vision.camera_node:main',
+    ],
+},
 )
