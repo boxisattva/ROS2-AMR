@@ -1,0 +1,37 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="hfLSx3ueETJmlhUtm0mn">
+    <mxGraphModel dx="399" dy="485" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="kSM6bbIzuGyVSGJlOUt1-1" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="Actor" vertex="1">
+          <mxGeometry height="60" width="30" x="50" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kSM6bbIzuGyVSGJlOUt1-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Ноутбук&lt;br&gt;ROS2 Humble + Docker" vertex="1">
+          <mxGeometry height="60" width="200" x="120" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kSM6bbIzuGyVSGJlOUt1-3" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#438DD5;" value="ROS2 Container (Docker)" vertex="1">
+          <mxGeometry height="210" width="200" x="120" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="kSM6bbIzuGyVSGJlOUt1-4" parent="kSM6bbIzuGyVSGJlOUt1-3" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="&lt;pre data-v-efb858b9=&quot;&quot; class=&quot;language-plain&quot;&gt;&lt;code class=&quot;language-plain&quot;&gt;amr_bringup&lt;/code&gt;&lt;/pre&gt;" vertex="1">
+          <mxGeometry height="30" width="200" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kSM6bbIzuGyVSGJlOUt1-5" parent="kSM6bbIzuGyVSGJlOUt1-3" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;amr_teleop&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="200" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kSM6bbIzuGyVSGJlOUt1-6" parent="kSM6bbIzuGyVSGJlOUt1-3" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;amr_base_control&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="200" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="kSM6bbIzuGyVSGJlOUt1-7" parent="kSM6bbIzuGyVSGJlOUt1-3" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;amr_navigation&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="200" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="kSM6bbIzuGyVSGJlOUt1-8" parent="kSM6bbIzuGyVSGJlOUt1-3" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;amr_vision&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="200" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="kSM6bbIzuGyVSGJlOUt1-9" parent="kSM6bbIzuGyVSGJlOUt1-3" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;amr_description&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="200" y="180" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
