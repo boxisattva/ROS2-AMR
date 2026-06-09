@@ -1,0 +1,26 @@
+@startuml
+title Component Diagram (C3) — ESP32 (FreeRTOS)
+
+node "ESP32 WROOM-32" as ESP32 {
+    [UART Protocol\nParser\nuart_protocol.cpp] as UART
+    [Motor Driver\nTB6612FNG\nmotor_driver.cpp] as Motor
+    [Odometry\nodometry.cpp] as Odom
+    [LED Feedback\nled_feedback.cpp] as LED
+    [Buzzer Feedback\nbuzzer_feedback.cpp] as Buzz
+    [Fail-safe\nfailsafe.cpp] as Safe
+}
+
+queue "UART RX\n$VEL, $LED..." as RX
+queue "UART TX\n$ODO, $STA..." as TX
+
+UART --> RX : парсит
+UART --> Motor : скорость\nlinear_x, angular_z
+UART --> LED : режим
+UART --> Buzz : частота/длительность
+Motor --> Odom : тики/PWM\nv_left, v_right
+Odom --> TX : формирует\n$ODO кадры
+UART --> TX : формирует\n$STA, $PONG
+Safe --> Motor : стоп при\nпотере связи
+Safe --> LED : красный\nмигающий
+
+@enduml

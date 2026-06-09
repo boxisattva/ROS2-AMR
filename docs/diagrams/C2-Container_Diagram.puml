@@ -1,0 +1,31 @@
+@startuml
+title Container Diagram (C2) — ROS2-AMR
+
+node "Ноутбук\nUbuntu 22.04 LTS" as Laptop {
+    rectangle "ROS2 Humble\n(6 пакетов)" as ROS2
+    rectangle "Docker\n(опционально)" as Docker
+    rectangle "RViz2\nВизуализация" as RViz
+}
+
+node "ESP32 WROOM-32\nFreeRTOS" as ESP32 {
+    rectangle "UART Parser\nTask" as UART
+    rectangle "Motor Control\nTask" as Motor
+    rectangle "Odometry\nTask" as Odom
+    rectangle "LED/Buzzer\nTask" as LED
+    rectangle "Fail-safe\nTask" as Failsafe
+}
+
+node "Периферия" as Periphery {
+    rectangle "RPLIDAR A1\n/dev/ttyUSB1" as Lidar
+    rectangle "ELP Camera\n/dev/video0" as Cam
+    rectangle "TB6612FNG\n+ 2× TT-моторы" as Driver
+    rectangle "WS2812B LED\n+ Buzzer" as Sound
+}
+
+Laptop <---> ESP32 : USB-UART CP2102\n/dev/ttyUSB0\n115200 baud\nCustom text protocol
+Laptop <--> Lidar : USB\n/dev/ttyUSB1
+Laptop <--> Cam : USB\n/dev/video0
+ESP32 --> Driver : GPIO\nPWM + DIR
+ESP32 --> Sound : GPIO\nPWM (LED) + Digital (Buzzer)
+
+@enduml
