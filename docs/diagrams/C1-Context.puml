@@ -1,0 +1,17 @@
+@startuml
+title C1 — System Context — ROS2-AMR
+
+skinparam rectangle {
+    BackgroundColor<<System>> #E3F2FD
+    BorderColor<<System>> #1565C0
+}
+
+actor "Оператор" as Operator
+rectangle "ROS2-AMR" as System <<System>>
+
+Operator --> System : Управляет (WASD)\nСмотрит RViz\nЗадаёт goal
+
+cloud "Окружение" as Env
+System --> Env : Сканирует (LiDAR)\nВидит (Camera)\nЕздит по полу
+
+@enduml

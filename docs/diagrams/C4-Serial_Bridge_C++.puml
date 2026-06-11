@@ -1,0 +1,22 @@
+@startuml
+title Code Diagram (C4) — SerialBridge
+
+class SerialBridge {
+    - serial::Serial serial_port_
+    - rclcpp::Publisher<<nav_msgs::msg::Odometry>::SharedPtr odom_pub_
+    - rclcpp::Subscription<<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_
+    + SerialBridge()
+    + ~SerialBridge()
+    - cmdVelCallback(const Twist::SharedPtr msg)
+    - parseFrame(const std::string& frame)
+    - publishOdometry(float v_left, float v_right, float dt)
+    - calculateChecksum(const std::string& data) : uint8_t
+}
+
+class "rclcpp::Node" as Node
+class "serial::Serial" as Serial
+
+SerialBridge --|> Node
+SerialBridge --> Serial : использует
+
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+title Component Diagram (C3) — Ноутбук (ROS2)
+
+package "ROS2 Humble Workspace" {
+    
+    [amr_bringup\nnavbot.launch.py] as Bringup
+    [amr_teleop\nkeyboard_teleop.py] as Teleop
+    [amr_base_control\nserial_bridge.cpp] as Bridge
+    [amr_description\nnavbot.urdf.xacro] as URDF
+    [amr_navigation\nSLAM + Nav2] as Nav
+    [amr_rplidar\nrplidar.launch.py] as Lidar
+    [amr_vision\nobject_detector.py] as Vision
+    
+    queue "/cmd_vel" as CmdVel
+    queue "/odom" as Odom
+    queue "/scan" as Scan
+    queue "/camera/image_raw" as Img
+    queue "/detected_objects" as Det
+}
+
+actor "Оператор" as Op
+rectangle "RViz2" as RViz
+
+Op --> Teleop : WASD
+Teleop --> CmdVel : публикует\ngeometry_msgs/Twist
+Bridge --> CmdVel : подписывается
+Bridge --> Odom : публикует\nnav_msgs/Odometry
+Nav --> Odom : подписывается
+Nav --> CmdVel : публикует (Nav2)
+Nav --> Scan : подписывается
+Lidar --> Scan : публикует\nsensor_msgs/LaserScan
+Vision --> Img : подписывается (видео)
+Vision --> Det : публикует\nBoundingBoxArray
+Bringup --> Bridge : запускает
+Bringup --> Nav : запускает
+Bringup --> Lidar : запускает
+Bringup --> Vision : запускает
+RViz --> Odom : визуализация
+RViz --> Scan : визуализация
+RViz --> Img : визуализация
+
+@enduml

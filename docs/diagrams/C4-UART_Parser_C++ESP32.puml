@@ -1,0 +1,24 @@
+@startuml
+title Code Diagram (C4) — UARTParser (ESP32)
+
+class UARTParser {
+    - String buffer_
+    - HardwareSerial* serial_
+    + begin(long baud)
+    + onLoop()
+    - parseFrame()
+    - validateChecksum(const String& frame) : bool
+    - dispatchCommand(const String& type, float* args, int argc)
+    + sendOdometry(float v_l, float v_r, float dt)
+    + sendStatus(uint8_t state, uint8_t err)
+}
+
+class MotorDriver
+class LEDFeedback
+class BuzzerFeedback
+
+UARTParser --> MotorDriver : $VEL → setSpeed()
+UARTParser --> LEDFeedback : $LED → setMode()
+UARTParser --> BuzzerFeedback : $BUZ → play()
+
+@enduml

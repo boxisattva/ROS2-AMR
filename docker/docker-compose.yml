@@ -1,0 +1,17 @@
+services:
+  ros2:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ros2-amr:latest
+    container_name: ros2-amr
+    volumes:
+      - ..:/ros2_ws
+    environment:
+      - DISPLAY=${DISPLAY:-}
+      - QT_X11_NO_MITSHM=1
+    network_mode: host
+    stdin_open: true
+    tty: true
+    working_dir: /ros2_ws
+    command: bash -c "source /opt/ros/humble/setup.bash && exec bash"
