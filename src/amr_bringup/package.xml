@@ -3,9 +3,10 @@
 <package format="3">
   <name>amr_bringup</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>AMR bringup package: launch files and demo nodes</description>
+  <license>MIT</license>
   <maintainer email="boxisattva@yandex.ru">denis</maintainer>
-  <license>TODO: License declaration</license>
+  
 
   <depend>rclpy</depend>
   <depend>std_msgs</depend>

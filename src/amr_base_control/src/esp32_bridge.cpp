@@ -8,8 +8,8 @@ public:
     {
         RCLCPP_INFO(this->get_logger(), "ESP32 Bridge node started");
         
-        // TODO: Implement serial communication with ESP32
-        // TODO: Subscribe to /cmd_vel, publish to /odom
+        // Week 2: Implement serial communication with ESP32
+        // Week 2: Subscribe to /cmd_vel, publish to /odom
         
         publisher_ = this->create_publisher<std_msgs::msg::String>("esp32_status", 10);
     }
