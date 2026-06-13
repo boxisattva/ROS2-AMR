@@ -69,9 +69,30 @@ demo: build
 		source $(WORKSPACE)/install/setup.bash && \
 		ros2 launch amr_bringup bringup.launch.py
 
+
+# =============================================================================
+# Docker-цели
+# =============================================================================
+
+# Запуск контейнера (docker-compose up -d)
+up:
+	@echo "$(GREEN)>>> Starting Docker container...$(NC)"
+	@docker-compose up -d
+	@echo "$(GREEN)>>> Container running. Use: make shell$(NC)"
+
+# Вход в контейнер
+shell:
+	@docker exec -it ros2-amr-navbot bash
+
+# Остановка контейнера
+down:
+	@echo "$(RED)>>> Stopping Docker container...$(NC)"
+	@docker-compose down
+
+
 # =============================================================================
 # Специальная цель: .PHONY — объявляет, что эти цели не являются файлами
 # =============================================================================
 # Без этого make будет искать файл с именем "build" и игнорировать команду,
 # если такой файл существует
-.PHONY: build test clean setup demo
+.PHONY: build test clean setup demo up shell down

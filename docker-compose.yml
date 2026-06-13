@@ -1,0 +1,17 @@
+services:
+  ros2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: ros2-amr-navbot
+    container_name: ros2-amr-navbot
+    volumes:
+      - ./src:/ros2_ws/src
+      - ./docs:/ros2_ws/docs
+    environment:
+      - DISPLAY=${DISPLAY}
+    network_mode: host
+    stdin_open: true
+    tty: true
+    working_dir: /ros2_ws
+    command: bash

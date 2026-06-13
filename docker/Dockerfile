@@ -1,10 +1,7 @@
-# Базовый образ Ubuntu 22.04 с ROS2 Humble
 FROM ros:humble-ros-base-jammy
 
-# Отключаем интерактивный режим apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Установка зависимостей
 RUN apt-get update && apt-get install -y \
     build-essential \
     git \
@@ -12,13 +9,26 @@ RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     python3-rosdep \
     ros-humble-desktop \
+    ros-humble-xacro \
+    ros-humble-urdf \
+    ros-humble-robot-state-publisher \
+    ros-humble-joint-state-publisher-gui \
+    ros-humble-nav2-bringup \
+    ros-humble-slam-toolbox \
+    ros-humble-rplidar-ros \
+    ros-humble-cv-bridge \
+    ros-humble-image-transport \
+    ros-humble-teleop-twist-keyboard \
+    ros-humble-rviz2 \
+    libserial-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Инициализация rosdep
 RUN rosdep init || true && rosdep update
 
-# Создание рабочего пространства
 WORKDIR /ros2_ws
 
-# Точка входа — запуск bash с sourced ROS2
-ENTRYPOINT ["/bin/bash", "-c", "source /opt/ros/humble/setup.bash && exec bash"]
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash"]
