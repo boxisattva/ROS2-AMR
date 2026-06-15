@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main, week1-foundation ]
+    branches: [ main, week1-foundation, week2-motion ]
   pull_request:
     branches: [ main ]
 
