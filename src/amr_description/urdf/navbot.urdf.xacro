@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="navbot">
+
+
+# TODO: Внести верные параметры вместо текущих
+  <!-- ==================== ПАРАМЕТРЫ ==================== -->
+  <!-- Все размеры в метрах, массы в кг -->
+  <xacro:property name="wheel_radius" value="0.033"/>      <!-- 65мм колесо / 2 -->
+  <xacro:property name="wheel_width" value="0.018"/>       <!-- 18мм ширина -->
+  <xacro:property name="wheel_base" value="0.16"/>         <!-- Расстояние между колёсами = 16см -->
+  <xacro:property name="chassis_length" value="0.12"/>     <!-- 12см -->
+  <xacro:property name="chassis_width" value="0.10"/>      <!-- 10см -->
+  <xacro:property name="chassis_height" value="0.05"/>     <!-- 5см высота корпуса -->
+  <xacro:property name="chassis_mass" value="0.5"/>        <!-- 500г -->
+  <xacro:property name="wheel_mass" value="0.05"/>         <!-- 50г колесо -->
+
+  <!-- ==================== МАТЕРИАЛЫ ==================== -->
+  <material name="orange">
+    <color rgba="1.0 0.5 0.0 1.0"/>
+  </material>
+  <material name="black">
+    <color rgba="0.1 0.1 0.1 1.0"/>
+  </material>
+  <material name="grey">
+    <color rgba="0.5 0.5 0.5 1.0"/>
+  </material>
+  <material name="white">
+    <color rgba="0.9 0.9 0.9 1.0"/>
+  </material>
+
+  <!-- ==================== МАКРОС КОЛЕСА ==================== -->
+  <!-- Используется дважды: левое и правое -->
+  <xacro:macro name="wheel" params="prefix reflect">
+    <link name="${prefix}_wheel_link">
+      <visual>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+        <material name="black"/>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="${wheel_mass}"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+    </link>
+
+    <!-- Continuous joint = вращение без ограничений -->
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${prefix}_wheel_link"/>
+      <!-- reflect=1 (левое) или -1 (правое). Смещение по Y на половину wheel_base -->
+      <origin xyz="0 ${reflect * wheel_base / 2} ${-wheel_radius}" rpy="${-pi/2} 0 0"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+  </xacro:macro>
+
+link name="dummy_link">
+  <inertial>
+    <mass value="0.001"/>
+    <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+  </inertial>
+</link>
+
+<<joint name="dummy_joint" type="fixed">
+  <parent link="dummy_link"/>
+  <child link="base_link"/>
+</joint>
+
+
+  <!-- ==================== BASE LINK ==================== -->
+  <!-- Центр масс робота. Все остальные links отсюда -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- ==================== КОЛЁСА ==================== -->
+  <xacro:wheel prefix="left" reflect="1"/>
+  <xacro:wheel prefix="right" reflect="-1"/>
+
+  <!-- ==================== CASTER WHEEL (опорное) ==================== -->
+  <link name="caster_wheel_link">
+    <visual>
+      <geometry>
+        <sphere radius="0.015"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+  </link>
+  <joint name="caster_wheel_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="caster_wheel_link"/>
+    <origin xyz="-0.05 0 -0.015"/>
+  </joint>
+
+  <!-- ==================== LASER MOUNT (RPLIDAR) ==================== -->
+  <link name="laser_mount_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.035" length="0.02"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+  </link>
+  <joint name="laser_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="laser_mount_link"/>
+    <!-- Спереди, сверху корпуса -->
+    <origin xyz="0.06 0 ${chassis_height / 2 + 0.01}"/>
+  </joint>
+
+  <!-- ==================== CAMERA MOUNT (ELP) ==================== -->
+  <link name="camera_mount_link">
+    <visual>
+      <geometry>
+        <box size="0.02 0.04 0.02"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+  </link>
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_mount_link"/>
+    <origin xyz="0.05 0 ${chassis_height / 2 + 0.015}"/>
+  </joint>
+
+</robot>

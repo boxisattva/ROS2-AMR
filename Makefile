@@ -89,6 +89,11 @@ down:
 	@echo "$(RED)>>> Stopping Docker container...$(NC)"
 	@docker-compose down
 
+# Проверка парсера
+check-urdf:
+	@xacro src/amr_description/urdf/navbot.urdf.xacro -o /tmp/navbot.urdf && \
+		check_urdf /tmp/navbot.urdf
+
 
 # =============================================================================
 # Специальная цель: .PHONY — объявляет, что эти цели не являются файлами
