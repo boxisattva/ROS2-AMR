@@ -25,7 +25,7 @@ setup(
     },
     entry_points={
     'console_scripts': [
-        'keyboard_control = amr_teleop.keyboard_control:main',
+        'keyboard_teleop = amr_teleop.keyboard_teleop:main',
     ],
 },
 )
