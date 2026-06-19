@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>amr_base_control</name>
-  <version>0.2.0</version>
-  <description>AMR base control: C++ serial bridge for ESP32 communication</description>
-  <maintainer email="boxisattva@gmaile.com">denis</maintainer>
+  <version>0.1.0</version>
+  <description>AMR base control: UART bridge, motor control, odometry</description>
+  <maintainer email="boxisattva@yandex.ru">denis</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

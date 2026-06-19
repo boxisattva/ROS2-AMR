@@ -1,139 +1,159 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <std_msgs/msg/string.hpp>
-
-// C headers for serial port
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
-
 #include <sstream>
 #include <iomanip>
+#include <mutex>
 #include <string>
+#include <algorithm>
 
 class SerialBridge : public rclcpp::Node
 {
 public:
     SerialBridge() : Node("serial_bridge"), fd_(-1)
     {
-        // ==================== ПАРАМЕТРЫ ROS2 ====================
-        // Параметры позволяют менять порт и скорость без перекомпиляции
         this->declare_parameter<std::string>("port", "/dev/ttyUSB0");
         this->declare_parameter<int>("baud", 115200);
+        this->declare_parameter<bool>("mock", false);
 
-        std::string port = this->get_parameter("port").as_string();
-        int baud = this->get_parameter("baud").as_int();
+        port_ = this->get_parameter("port").as_string();
+        baud_ = this->get_parameter("baud").as_int();
+        mock_ = this->get_parameter("mock").as_bool();
 
-        // ==================== ПОДПИСКА НА /cmd_vel ====================
-        // Nav2 или teleop публикуют сюда Twist-сообщения
+        status_pub_ = this->create_publisher<std_msgs::msg::String>("/motor_status", 10);
+        
         cmd_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
-            "/cmd_vel",
-            10,  // queue size
+            "/cmd_vel", 10,
             std::bind(&SerialBridge::cmdVelCallback, this, std::placeholders::_1));
 
-        // ==================== ПУБЛИКАЦИЯ /motor_status ====================
-        // Для диагностики: что отправлено, успешно ли
-        status_pub_ = this->create_publisher<std_msgs::msg::String>(
-            "/motor_status",
-            10);
-
-        // ==================== ОТКРЫТИЕ SERIAL PORT ====================
-        // O_RDWR = чтение+запись, O_NOCTTY = не делать терминал управляющим
-        fd_ = open(port.c_str(), O_RDWR | O_NOCTTY);
-        if (fd_ < 0) {
-            RCLCPP_ERROR(this->get_logger(), "Failed to open %s", port.c_str());
-            RCLCPP_ERROR(this->get_logger(), "Serial bridge will run in MOCK mode (logging only)");
-            // Не выходим — работаем в режиме логирования без железа
-            mock_mode_ = true;
+        if (!mock_) {
+            if (!openSerial()) {
+                RCLCPP_ERROR(this->get_logger(), 
+                    "Failed to open serial port %s. Running in degraded mode.", port_.c_str());
+                publishStatus("ERR: serial port not open");
+            }
         } else {
-            mock_mode_ = false;
-            configureSerial(baud);
+            RCLCPP_WARN(this->get_logger(), "MOCK MODE: output logged, not written to port");
         }
 
-        RCLCPP_INFO(this->get_logger(), "SerialBridge: %s @ %d baud (mock=%s)",
-                    port.c_str(), baud, mock_mode_ ? "true" : "false");
+        read_timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(50),
+            std::bind(&SerialBridge::readSerial, this));
+
+        RCLCPP_INFO(this->get_logger(), 
+            "SerialBridge: port=%s baud=%d mock=%s", 
+            port_.c_str(), baud_, mock_ ? "true" : "false");
     }
 
     ~SerialBridge()
     {
         if (fd_ >= 0) {
             close(fd_);
-            RCLCPP_INFO(this->get_logger(), "Serial port closed");
+            fd_ = -1;
         }
     }
 
 private:
-    // ==================== НАСТРОЙКА TERMIOS ====================
-    // 115200 baud, 8 data bits, no parity, 1 stop bit (8N1)
-    void configureSerial(int baud)
+    bool openSerial()
     {
-        struct termios tty;
-        memset(&tty, 0, sizeof(tty));
-
-        if (tcgetattr(fd_, &tty) != 0) {
-            RCLCPP_ERROR(this->get_logger(), "tcgetattr failed");
-            return;
+        fd_ = open(port_.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+        if (fd_ < 0) {
+            return false;
         }
 
-        // Скорость
+        fcntl(fd_, F_SETFL, 0);
+
+        struct termios tty;
+        if (tcgetattr(fd_, &tty) != 0) {
+            close(fd_);
+            fd_ = -1;
+            return false;
+        }
+
         cfsetospeed(&tty, B115200);
         cfsetispeed(&tty, B115200);
 
-        // 8N1: 8 data bits, no parity, 1 stop bit
-        tty.c_cflag &= ~PARENB;        // no parity
-        tty.c_cflag &= ~CSTOPB;        // 1 stop bit
-        tty.c_cflag &= ~CSIZE;         // clear size mask
-        tty.c_cflag |= CS8;            // 8 bits
-        tty.c_cflag |= CREAD | CLOCAL; // enable read, ignore modem control
+        tty.c_cflag &= ~PARENB;
+        tty.c_cflag &= ~CSTOPB;
+        tty.c_cflag &= ~CSIZE;
+        tty.c_cflag |= CS8;
+        tty.c_cflag |= CREAD | CLOCAL;
 
-        // Raw mode: без обработки, без эхо
         tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
         tty.c_iflag &= ~(IXON | IXOFF | IXANY);
         tty.c_oflag &= ~OPOST;
 
-        tcsetattr(fd_, TCSANOW, &tty);
-        tcflush(fd_, TCIOFLUSH);
+        tty.c_cc[VMIN] = 0;
+        tty.c_cc[VTIME] = 0;
+
+        tcflush(fd_, TCIFLUSH);
+
+        if (tcsetattr(fd_, TCSANOW, &tty) != 0) {
+            close(fd_);
+            fd_ = -1;
+            return false;
+        }
+        return true;
     }
 
-    // ==================== CALLBACK /cmd_vel ====================
     void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
     {
-        float linear_x = msg->linear.x;
-        float angular_z = msg->angular.z;
+        // FIX: std::clamp требует одинаковый тип. msg->linear.x — double, литералы тоже double.
+        double linear_x = std::clamp(msg->linear.x, -0.5, 0.5);
+        double angular_z = std::clamp(msg->angular.z, -1.0, 1.0);
 
-        // Ограничение скорости (safety)
-        linear_x = std::clamp(linear_x, -0.5f, 0.5f);
-        angular_z = std::clamp(angular_z, -1.0f, 1.0f);
-
-        // Форматирование $VEL-команды
         std::stringstream ss;
-        ss << "$VEL," << std::fixed << std::setprecision(2) << linear_x << "," << angular_z;
-        std::string payload = ss.str().substr(1); // без '$' для CRC
+        ss << "VEL," << std::fixed << std::setprecision(2) << linear_x << "," << angular_z;
+        std::string payload = ss.str();
 
-        // Расчёт XOR checksum
         uint8_t crc = calculateCRC(payload);
-        std::string cmd = "$" + payload + "*" + toHex(crc) + "\r\n";
+        std::string frame = "$" + payload + "*" + toHex(crc) + "\n";
 
-        // Отправка в serial port (или лог в mock mode)
-        if (!mock_mode_) {
-            ssize_t written = write(fd_, cmd.c_str(), cmd.length());
-            if (written < 0) {
-                RCLCPP_ERROR(this->get_logger(), "Write to serial failed");
-                publishStatus("ERR,WRITE_FAILED");
-                return;
-            }
+        if (mock_) {
+            RCLCPP_INFO(this->get_logger(), "[MOCK] TX: %s", frame.c_str());
+            publishStatus("MOCK: " + frame);
         } else {
-            // MOCK mode: просто логируем, что БЫЛО бы отправлено
-            RCLCPP_INFO(this->get_logger(), "[MOCK] TX: %s", cmd.c_str());
+            std::lock_guard<std::mutex> lock(mutex_);
+            if (fd_ >= 0) {
+                ssize_t n = write(fd_, frame.c_str(), frame.length());
+                if (n < 0) {
+                    RCLCPP_ERROR(this->get_logger(), "Serial write failed");
+                    publishStatus("ERR: serial write failed");
+                } else {
+                    RCLCPP_DEBUG(this->get_logger(), "TX: %s", frame.c_str());
+                }
+            } else {
+                publishStatus("ERR: serial port not open");
+            }
         }
-
-        // Публикация статуса
-        publishStatus("OK," + cmd);
-
-        RCLCPP_DEBUG(this->get_logger(), "TX: %s", cmd.c_str());
     }
 
-    // ==================== CRC-8 (XOR) ====================
+    void readSerial()
+    {
+        if (fd_ < 0 || mock_) return;
+
+        char buf[256];
+        ssize_t n = read(fd_, buf, sizeof(buf));
+        if (n > 0) {
+            rx_buffer_.append(buf, n);
+            
+            size_t pos;
+            while ((pos = rx_buffer_.find('\n')) != std::string::npos) {
+                std::string line = rx_buffer_.substr(0, pos);
+                if (!line.empty() && line.back() == '\r') line.pop_back();
+                rx_buffer_.erase(0, pos + 1);
+
+                if (!line.empty()) {
+                    RCLCPP_INFO(this->get_logger(), "RX: %s", line.c_str());
+                    publishStatus(line);
+                }
+            }
+        }
+    }
+
     uint8_t calculateCRC(const std::string& data)
     {
         uint8_t crc = 0;
@@ -143,43 +163,40 @@ private:
         return crc;
     }
 
-    // ==================== HEX конвертация ====================
-    std::string toHex(uint8_t value)
+    std::string toHex(uint8_t v)
     {
         const char* hex = "0123456789ABCDEF";
-        std::string result;
-        result += hex[value >> 4];   // старший полубайт
-        result += hex[value & 0x0F]; // младший полубайт
-        return result;
+        std::string s;
+        s += hex[v >> 4];
+        s += hex[v & 0x0F];
+        return s;
     }
 
-    // ==================== ПУБЛИКАЦИЯ СТАТУСА ====================
-    void publishStatus(const std::string& status)
+    void publishStatus(const std::string& text)
     {
-        std_msgs::msg::String msg;
-        msg.data = status;
+        auto msg = std_msgs::msg::String();
+        msg.data = text;
         status_pub_->publish(msg);
     }
 
-    // ==================== ПОЛЯ ====================
-    int fd_;                    // file descriptor serial port
-    bool mock_mode_;            // true = нет железа, только логи
+    std::string port_;
+    int baud_;
+    bool mock_;
+    int fd_;
+    std::mutex mutex_;
+    std::string rx_buffer_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_sub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr status_pub_;
+    rclcpp::TimerBase::SharedPtr read_timer_;
 };
 
-// ==================== MAIN ====================
 int main(int argc, char** argv)
 {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<SerialBridge>();
-
-    if (!node) {
-        RCLCPP_ERROR(rclcpp::get_logger("serial_bridge"), "Node creation failed");
-        return 1;
+    if (node) {
+        rclcpp::spin(node);
     }
-
-    rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
 }
