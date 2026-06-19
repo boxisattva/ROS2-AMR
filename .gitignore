@@ -33,3 +33,5 @@ docs/demos/*.mp4
 
 # Логи
 *.log
+frames_*.gv
+frames_*.pdf
