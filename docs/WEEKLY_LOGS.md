@@ -82,3 +82,35 @@
 - [BOM.md](BOM.md) — статус компонентов (RPLIDAR приходит 14.06)
 - [SKILL_MATRIX.md](SKILL_MATRIX.md) — обновление навыков
 - [PROTOCOL.md](PROTOCOL.md) — UART v1.0
+
+
+## Week 3 — День 1 (2026-06-22)
+
+### Выполнено
+- [x] W3-Iss1: Валидация ESP32-DevKitC V4
+  - Blink прошивается, loopback 100/100, все 6 GPIO целы
+  - Onboard CP2102 работает стабильно, внешний модуль не нужен
+- [x] W3-Iss3: Базовая прошивка safety
+  - 4 красных LED (GPIO25/26/32/33) + резисторы 220Ω
+  - E-Stop (GPIO4, INPUT_PULLUP): мгновенный стоп
+  - Watchdog 200 мс: стоп при потере связи
+  - Heartbeat LED: пульс 500 мс в idle
+- [x] W3-Iss4: FSM UART-парсер + PWM
+  - Парсер: WAIT_DOLLAR → READ_PAYLOAD → READ_CRC1 → READ_CRC2 → VALIDATE
+  - CRC-8 XOR, 5 команд dispatch
+  - Differential drive: v_left = v - ω·L/2, v_right = v + ω·L/2
+  - PWM через ledc (каналы 0/1), deadband 0.01 м/с, clamp [0,255]
+  - Инструмент `tools/crc_calc.py` для расчёта CRC
+
+### Проблемы и решения
+- Проблема: `ledcSetup`/`ledcAttachPin` вызывали reboot loop
+- Решение: убраны из Issue 3, добавлены в Issue 4 после валидации blink
+- Проблема: мусор от bootloader'а после прошивки
+- Решение: нажатие EN для чистого ребута (в `platformio.ini` добавить `upload_resetmethod`)
+
+### Завтра (День 2)
+- W3-Iss2: Диагностика RPLIDAR A1 (железо уже на руках)
+- W3-Iss5: Интеграция serial_bridge (ноутбук ↔ ESP32, end-to-end тест)
+- Подключение моторов к TB6612FNG (физическая сборка)
+
+
