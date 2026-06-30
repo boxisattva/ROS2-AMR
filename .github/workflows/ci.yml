@@ -3,91 +3,60 @@ name: ROS2-AMR CI
 on:
   push:
     branches:
-      - '**'        # ВСЕ ветки: main, week2, week3, feature/*, fix/*
+      - '**'
   pull_request:
     branches:
-      - '**'        # ВСЕ PR, не только в main
+      - '**'
 
 jobs:
-  # ============================================================================
-  # Job 1: ROS2 Humble build + test
-  # ============================================================================
   ros2-build:
     runs-on: ubuntu-22.04
     container:
       image: ros:humble-ros-base-jammy
-    
+    defaults:
+      run:
+        shell: bash
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      
-      - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y python3-pip python3-colcon-common-extensions
-      
-      - name: Build ROS2 packages
-        run: |
-          source /opt/ros/humble/setup.bash
+      - uses: actions/checkout@v3
+      - run: |
+          . /opt/ros/humble/setup.bash
           colcon build --symlink-install --packages-select \
-            amr_base_control \
-            amr_teleop \
-            amr_bringup \
-            amr_description
-      
-      - name: Test ROS2 packages
-        run: |
-          source /opt/ros/humble/setup.bash
+            amr_base_control amr_teleop amr_bringup amr_description
+      - run: |
+          . /opt/ros/humble/setup.bash
           colcon test --packages-select amr_base_control amr_teleop
           colcon test-result --verbose
 
-  # ============================================================================
-  # Job 2: ESP32 Firmware build (PlatformIO)
-  # ============================================================================
   esp32-build:
     runs-on: ubuntu-22.04
-    
+    defaults:
+      run:
+        shell: bash
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      
-      - name: Install PlatformIO
-        run: |
-          pip install platformio
-      
-      - name: Build firmware
-        run: |
+      - run: pip install platformio
+      - run: |
           cd firmware/amr_controller
           pio run
-      
-      - name: Check code style (cppcheck)
-        run: |
+      - run: |
           pip install cpplint
           cd firmware/amr_controller/src
           cpplint --filter=-legal/copyright main.cpp || true
 
-  # ============================================================================
-  # Job 3: Python tools validation
-  # ============================================================================
   python-tools:
     runs-on: ubuntu-22.04
-    
+    defaults:
+      run:
+        shell: bash
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      
-      - name: Test crc_calc.py
-        run: |
+      - run: |
           python3 tools/crc_calc.py << 'EOF'
           q
           EOF
