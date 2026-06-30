@@ -12,11 +12,11 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 # === Исполняемые файлы ===
 add_executable(serial_bridge src/serial_bridge.cpp)
-ament_target_dependencies(serial_bridge rclcpp geometry_msgs nav_msgs std_msgs tf2)
-target_link_libraries(serial_bridge ${catkin_LIBRARIES})
+ament_target_dependencies(serial_bridge rclcpp geometry_msgs nav_msgs std_msgs tf2 tf2_ros)
 
 # === Установка ===
 install(TARGETS serial_bridge
@@ -27,6 +27,5 @@ install(DIRECTORY
   launch
   DESTINATION share/${PROJECT_NAME}/
 )
-
 
 ament_package()
