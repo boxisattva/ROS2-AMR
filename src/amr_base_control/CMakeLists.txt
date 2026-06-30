@@ -5,16 +5,21 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
+# === Зависимости ===
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(tf2 REQUIRED)
 
-add_executable(esp32_bridge src/esp32_bridge.cpp)
-ament_target_dependencies(esp32_bridge rclcpp std_msgs)
+# === Исполняемые файлы ===
+add_executable(serial_bridge src/serial_bridge.cpp)
+ament_target_dependencies(serial_bridge rclcpp geometry_msgs nav_msgs std_msgs tf2)
+target_link_libraries(serial_bridge ${catkin_LIBRARIES})
 
-install(TARGETS
-  esp32_bridge
+# === Установка ===
+install(TARGETS serial_bridge
   DESTINATION lib/${PROJECT_NAME}
 )
 
